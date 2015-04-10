@@ -152,13 +152,8 @@ namespace Recolor
                 from e in runs
                 orderby e.Run.Index, e.Priority
                 select e;
-
             var ordered = q.ToList();
-            var comparer = new Comparer<Markup>((a, b) =>
-            {
-                var cmp = a.Run.Index.CompareTo(b.Run.Index);
-                return cmp != 0 ? cmp : a.Priority.CompareTo(b.Priority);
-            });
+            var comparer = new Comparer<Markup>((a, b) => Comparables.Compare(a.Run.Index, a.Priority, b.Run.Index, b.Priority));
 
             while (ordered.Count > 1)
             {
