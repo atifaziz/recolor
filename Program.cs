@@ -67,7 +67,7 @@ namespace Recolor
 
             public static Color Parse(string input)
             {
-                var tokens = input.Split(new[] { ',' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                var tokens = input.Split(new [] { '/' }, 2, StringSplitOptions.RemoveEmptyEntries);
                 return new Color(ParseConsoleColor(tokens[0]), tokens.Length > 1 ? ParseConsoleColor(tokens[1]) : null);
             }
 
