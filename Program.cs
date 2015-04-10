@@ -85,6 +85,7 @@ namespace Recolor
             public int Index { get; private set; }
             public int Length { get; private set; }
             public int End { get { return Index + Length; } }
+            public bool IsEmpty { get { return Length == 0; } }
 
             public Run(int index, int length) : this()
             {
@@ -95,7 +96,12 @@ namespace Recolor
             public bool Equals(Run other) { return Index == other.Index && Length == other.Length; }
             public override bool Equals(object obj) { return obj is Run && Equals((Run) obj); }
             public override int GetHashCode() { return unchecked((Index * 397) ^ Length); }
-            public bool OverlapsWith(Run other) { return other.Index >= Index && other.Index < End; }
+
+            public bool OverlapsWith(Run other)
+            {
+                return !IsEmpty && !other.IsEmpty
+                    && other.Index >= Index && other.Index < End;
+            }
         }
 
         [DebuggerDisplay("Run = {Run}, Color = {Color}, Priority = {Priority}")]
