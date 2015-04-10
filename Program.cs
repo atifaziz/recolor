@@ -67,7 +67,7 @@ namespace Recolor
 
             public static Color Parse(string input)
             {
-                var tokens = input.Split(new [] { '/' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                var tokens = input.Split(StringSeparatorStock.Slash, 2, StringSplitOptions.RemoveEmptyEntries);
                 return new Color(ParseConsoleColor(tokens[0]), tokens.Length > 1 ? ParseConsoleColor(tokens[1]) : null);
             }
 
@@ -201,7 +201,7 @@ namespace Recolor
             var defaultColor = new Color(Console.ForegroundColor, Console.BackgroundColor);
             var markers =
                 from arg in args.Select((spec, i) => new { Spec = spec, Priority = i })
-                let tokens = arg.Spec.Split(new[] { '=' }, 2, StringSplitOptions.RemoveEmptyEntries)
+                let tokens = arg.Spec.Split(StringSeparatorStock.Equal, 2, StringSplitOptions.RemoveEmptyEntries)
                 where tokens.Length > 1
                 select new
                 {
@@ -239,6 +239,12 @@ namespace Recolor
                 }
                 Console.WriteLine();
             }
+        }
+
+        static class StringSeparatorStock
+        {
+            public static readonly char[] Slash = { '/' };
+            public static readonly char[] Equal = { '=' };
         }
 
         static int Main(string[] args)
