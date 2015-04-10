@@ -40,8 +40,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.g.tt</DependentUpon>
     </Compile>
+    <Compile Include="LinqBridge.cs" />
+    <Compile Include="MoreLinq\MoreEnumerable.Prepend.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Mannex.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -49,6 +52,7 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AssemblyInfo.g.cs</LastGenOutput>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
