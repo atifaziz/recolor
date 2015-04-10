@@ -130,19 +130,19 @@ namespace Recolor
 
         delegate IEnumerable<Markup> Marker(string line);
 
-        sealed class MarkupSplicer : ISplicer<Markup>
+        sealed class MarkupSlicer : ISlicer<Markup>
         {
-            public static readonly MarkupSplicer Stock = new MarkupSplicer();
+            public static readonly MarkupSlicer Stock = new MarkupSlicer();
 
-            public TResult Splice<TResult>(Markup input, Run run, Func<Markup, Markup, TResult> selector)
+            public TResult Slice<TResult>(Markup input, Run run, Func<Markup, Markup, TResult> selector)
             {
                 return input.Split(run, selector);
             }
         }
 
-        interface ISplicer<T>
+        interface ISlicer<T>
         {
-            TResult Splice<TResult>(T input, Run run, Func<T, T, TResult> selector);
+            TResult Slice<TResult>(T input, Run run, Func<T, T, TResult> selector);
         }
 
         sealed class Comparer<T> : IComparer<T>
@@ -152,7 +152,7 @@ namespace Recolor
             public int Compare(T x, T y) { return _comparison(x, y); }
         }
 
-        static IEnumerable<Markup> Reflow(IEnumerable<Markup> runs, ISplicer<Markup> splicer)
+        static IEnumerable<Markup> Reflow(IEnumerable<Markup> runs, ISlicer<Markup> slicer)
         {
             var q =
                 from e in runs
@@ -167,7 +167,7 @@ namespace Recolor
                 var snd = ordered[0];
                 if (fst.Run.OverlapsWith(snd.Run))
                 {
-                    var splits = splicer.Splice(fst, snd.Run, (l, r) => new { Left = l, Right = r });
+                    var splits = slicer.Slice(fst, snd.Run, (l, r) => new { Left = l, Right = r });
                     yield return splits.Left;
                     var index = ~ordered.BinarySearch(splits.Right, comparer);
                     ordered.Insert(index, splits.Right);
@@ -231,7 +231,7 @@ namespace Recolor
             {
                 // ReSharper disable once AccessToModifiedClosure
                 var runs = markers.SelectMany(m => m(line));
-                var markups = Reflow(runs, MarkupSplicer.Stock);
+                var markups = Reflow(runs, MarkupSlicer.Stock);
                 foreach (var markup in markups)
                 {
                     markup.Color.Do(fg => Console.ForegroundColor = fg, bg => Console.BackgroundColor = bg);
