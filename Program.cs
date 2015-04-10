@@ -200,7 +200,7 @@ namespace Recolor
         {
             var defaultColor = new Color(Console.ForegroundColor, Console.BackgroundColor);
             var markers =
-                from arg in args.Reverse().Select((spec, i) => new { Spec = spec, Priority = i })
+                from arg in args.Select((spec, i) => new { Spec = spec, Priority = i })
                 let tokens = arg.Spec.Split(new[] { '=' }, 2, StringSplitOptions.RemoveEmptyEntries)
                 where tokens.Length > 1
                 select new
