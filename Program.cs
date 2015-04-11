@@ -24,9 +24,13 @@ namespace Recolor
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
+    using System.Runtime.InteropServices;
+    using System.Text;
     using System.Text.RegularExpressions;
     using Mannex;
     using Mannex.Collections.Generic;
+    using Mannex.Reflection;
     using MoreLinq;
 
     #endregion
@@ -217,9 +221,18 @@ namespace Recolor
 
         static void Wain(IEnumerable<string> args)
         {
+            var argList = args.ToList();
+            if (argList.Remove("-?")
+                || argList.Remove("-h")
+                || argList.Remove("--help"))
+            {
+                ShowHelp(Console.Out);
+                return;
+            }
+
             var defaultColor = new Color(Console.ForegroundColor, Console.BackgroundColor);
             var markers =
-                from arg in args.Select((spec, i) => new { Spec = spec, Priority = i })
+                from arg in argList.Select((spec, i) => new { Spec = spec, Priority = i })
                 let tokens = arg.Spec.Split(StringSeparatorStock.Equal, 2, StringSplitOptions.RemoveEmptyEntries)
                 where tokens.Length > 1
                 select new
@@ -241,6 +254,23 @@ namespace Recolor
             {
                 defaultColor.Do(fg => Console.ForegroundColor = fg, bg => Console.BackgroundColor = bg);
             }
+        }
+
+        static void ShowHelp(TextWriter output)
+        {
+            var type = typeof(Program);
+            var assembly = type.Assembly;
+
+            var vi = FileVersionInfo.GetVersionInfo(new Uri(assembly.CodeBase).LocalPath);
+
+            var help = assembly.GetManifestResourceString(type, "Help.txt")
+                               .Replace("$NAME", Path.GetFileNameWithoutExtension(vi.FileName))
+                               .Replace("$PRODUCT", vi.ProductName)
+                               .Replace("$VERSION", vi.FileVersion)
+                               .Replace("$COPYRIGHT", vi.LegalCopyright);
+
+            foreach (var line in help.Trim().SplitIntoLines())
+                output.WriteLine(line);
         }
 
         static void PaintLines(TextReader reader, IEnumerable<Marker> markers)

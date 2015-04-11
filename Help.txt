@@ -1,0 +1,120 @@
+﻿$PRODUCT $VERSION
+$COPYRIGHT
+
+Colors text received over standard input based on regular expression patterns.
+
+Usage:
+
+    $NAME COLOR1=REGEX1 COLOR2=REGEX2 ... COLORN=REGEXN
+
+Each line read over standard input is tested against each regular expression
+pattern (REGEX) in turn. Those that match are used to highlight the matched
+portion of the text in the corresponding color (COLOR). The regular
+expression patterns are tested on each line only once unless a start-equal
+(*=) instead just an equal (=) is used to separate the color from the regular
+expression pattern specification.
+
+A color is specified in one of three formats:
+
+    1. FOREGROUND
+    2. FOREGROUND/BACKGROUND
+    3. HEX
+
+Format 1 sets only the foreground color of the text whereas format 2 sets the
+foreground and background colors (separated by a forward-slash to mean
+foreground over background). The colors themselves are specified using the
+names listed below .In format 3, the colors are specified by two hex digits:
+the first corresponds to the background and the second the foreground. If
+only hex digit is given then it sets the foreground color. The color
+corresponding of each hex digits is shown below.
+
+    0 = Black           8 = DarkGray
+    1 = DarkBlue        9 = Blue
+    2 = DarkGreen       A = Green
+    3 = DarkCyan        B = Cyan
+    4 = DarkRed         C = Red
+    5 = DarkMagenta     D = Magenta
+    6 = DarkYellow      E = Yellow
+    7 = Gray            F = White
+
+The regular expression pattern language reference can be found online at:
+
+    http://go.microsoft.com/fwlink/?LinkId=133231
+
+Below is a quick reference:
+
+    Main Elements ------------------------------------------------------------
+
+    text     Matches exact characters anywhere in the original text.
+
+    .        Matches any single character.
+
+    [chars]  Matches at least one of the characters in the brackets.
+
+    [range]  Matches at least one of the characters within the range. The use
+             of a hyphen (-) allows you to specify an adjacent character.
+
+    [^chars] Matches any characters except those in brackets.
+
+    ^        Matches the beginning characters.
+
+    $        Matches the end characters.
+
+    *        Matches any instances of the preceding character.
+
+    ?        Matches zero or one instance of the preceding character.
+
+    \        Matches the character that follows as an escaped character.
+
+    Quantifiers --------------------------------------------------------------
+
+    *        Specifies zero or more matches.
+
+    +        Matches repeating instances of the preceding characters.
+
+    ?        Specifies zero or one matches.
+
+    {n}      Specifies exactly n matches.
+
+    {n,}     Specifies at least n matches.
+
+    {n,m}    Specifies at least n, but no more than m, matches.
+
+    Character Classes --------------------------------------------------------
+
+    \p{name} Matches any character in the named character class specified by
+             {name}. Supported names are Unicode groups and block ranges such
+             as Ll, Nd, Z, IsGreek, and IsBoxDrawing.
+
+    \P{name} Matches text not included in the groups and block ranges
+             specified in {name}.
+
+    \w       Matches any word character. Equivalent to the Unicode character
+             categories [\p{Ll} \p{Lu}\p{Lt}\p{Lo}\p{Nd}\p{Pc}].
+
+    \W       Matches any nonword character. Equivalent to the Unicode
+             categories [^\p{Ll}\p{Lu}\p{Lt} \p{Lo}\p{Nd}\p{Pc}].
+
+    \s       Matches any white-space character. Equivalent to the Unicode
+             character categories [\f\n\r\t\v\x85\p{Z}].
+
+    \S       Matches any non-white-space character. Equivalent to the Unicode
+             character categories [^\f\n\r\t\v\x85\p{Z}].
+
+    \d       Matches any decimal digit. Equivalent to \p{Nd} for Unicode and
+             [0-9] for non-Unicode behavior.
+
+    \D       Matches any nondigit. Equivalent  to \P{Nd} for Unicode and
+             [^0-9] for non-Unicode behavior.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
