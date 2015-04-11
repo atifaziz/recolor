@@ -203,17 +203,14 @@ namespace Recolor
 
         static Marker CreateMarker(Regex regex, bool all, Color color, int priority)
         {
-            return line => from run in Matches(line, regex, all)
+            return line => from matches in new[]
+                           {
+                               from Match m in regex.Matches(line)
+                               select m
+                           }
+                           from m in all ? matches : matches.Take(1)
+                           select new Run(m.Index, m.Length) into run
                            select new Markup(run, color, priority);
-        }
-
-        static IEnumerable<Run> Matches(string line, Regex regex, bool all)
-        {
-            for (var m = regex.Match(line); m.Success; m = m.NextMatch())
-            {
-                yield return new Run(m.Index, m.Length);
-                if (!all) yield break;
-            }
         }
 
         static void Wain(IEnumerable<string> args)
