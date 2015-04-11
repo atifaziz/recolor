@@ -97,6 +97,11 @@ namespace Recolor
                      ? (ConsoleColor)Enum.Parse(typeof(ConsoleColor), input, true)
                      : (ConsoleColor?)null;
             }
+
+            public void ApplyToConsole()
+            {
+                Do(fg => Console.ForegroundColor = fg, bg => Console.BackgroundColor = bg);
+            }
         }
 
         [DebuggerDisplay("{Index}...{End} ({Length})")]
@@ -246,7 +251,7 @@ namespace Recolor
             }
             finally
             {
-                defaultColor.Do(fg => Console.ForegroundColor = fg, bg => Console.BackgroundColor = bg);
+                defaultColor.ApplyToConsole();
             }
         }
 
@@ -277,7 +282,7 @@ namespace Recolor
                 var markups = Reflow(runs, MarkupSlicer.Stock);
                 foreach (var markup in markups)
                 {
-                    markup.Color.Do(fg => Console.ForegroundColor = fg, bg => Console.BackgroundColor = bg);
+                    markup.Color.ApplyToConsole();
                     Console.Write(line.Substring(markup.Run.Index, markup.Run.Length));
                 }
                 Console.WriteLine();
