@@ -101,10 +101,10 @@ namespace Recolor
         [DebuggerDisplay("{Index}...{End} ({Length})")]
         struct Run : IEquatable<Run>
         {
-            public int Index { get; private set; }
-            public int Length { get; private set; }
-            public int End { get { return Index + Length; } }
-            public bool IsEmpty { get { return Length == 0; } }
+            public int Index    { get; private set;  }
+            public int Length   { get; private set;  }
+            public int End      { get { return Index + Length; } }
+            public bool IsEmpty { get { return Length == 0;    } }
 
             public Run(int index, int length) : this()
             {
