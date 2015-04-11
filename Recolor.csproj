@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Recolor</RootNamespace>
     <AssemblyName>recolor</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Packages\Comparables\Comparables.cs" />
@@ -42,7 +44,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.g.tt</DependentUpon>
     </Compile>
-    <Compile Include="LinqBridge.cs" />
     <Compile Include="MoreLinq\MoreEnumerable.Prepend.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="AssemblyInfo.cs" />
