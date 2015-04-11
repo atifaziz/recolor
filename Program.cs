@@ -21,6 +21,7 @@ namespace Recolor
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
@@ -67,8 +68,26 @@ namespace Recolor
 
             public static Color Parse(string input)
             {
-                var tokens = input.Split(StringSeparatorStock.Slash, 2, StringSplitOptions.RemoveEmptyEntries);
-                return new Color(ParseConsoleColor(tokens[0]), tokens.Length > 1 ? ParseConsoleColor(tokens[1]) : null);
+                Color color;
+                if ((input.Length > 0 && IsHexChar(input[0]))
+                    && (input.Length == 1 || (input.Length == 2 && IsHexChar(input[1]))))
+                {
+                    var n = int.Parse(input, NumberStyles.HexNumber);
+                    color = new Color((ConsoleColor) (n & 0xf), (ConsoleColor) (n >> 4));
+                }
+                else
+                {
+                    var tokens = input.Split(StringSeparatorStock.Slash, 2, StringSplitOptions.RemoveEmptyEntries);
+                    color = new Color(ParseConsoleColor(tokens[0]), tokens.Length > 1 ? ParseConsoleColor(tokens[1]) : null);
+                }
+                return color;
+            }
+
+            static bool IsHexChar(char ch)
+            {
+                return (ch >= '0' && ch <= '9')
+                    || (ch >= 'a' && ch <= 'f')
+                    || (ch >= 'A' && ch <= 'F');
             }
 
             static ConsoleColor? ParseConsoleColor(string input)
