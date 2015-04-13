@@ -20,10 +20,12 @@ namespace Recolor
 
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
     using Mannex;
     using Mannex.Collections.Generic;
@@ -222,18 +224,29 @@ namespace Recolor
 
         static void Wain(IEnumerable<string> args)
         {
-            var argList = args.ToList();
-            if (argList.Remove("-?")
-                || argList.Remove("-h")
-                || argList.Remove("--help"))
+            args = args.ToArray();
+
+            if (args.Any(arg => "-?".Equals(arg, StringComparison.OrdinalIgnoreCase)
+                             || "-h".Equals(arg, StringComparison.OrdinalIgnoreCase)
+                             || "--help".Equals(arg, StringComparison.OrdinalIgnoreCase)))
             {
                 ShowHelp(Console.Out);
                 return;
             }
 
+            args =
+                from arg in args
+                select !arg.StartsWith("@")
+                     ? new[] { arg }.AsEnumerable()
+                     : arg.Length == 1
+                     ? Enumerable.Empty<string>()
+                     : ParseResponseFile(arg.Substring(1)) into argz
+                from arg in argz
+                select arg;
+
             var defaultColor = new Color(Console.ForegroundColor, Console.BackgroundColor);
             var markers =
-                from arg in argList.Select((spec, i) => new { Spec = spec, Priority = i })
+                from arg in args.Select((spec, i) => new { Spec = spec, Priority = i })
                 let tokens = arg.Spec.Split(StringSeparatorStock.Equal, 2, StringSplitOptions.RemoveEmptyEntries)
                 where tokens.Length > 1
                 select new
@@ -254,6 +267,53 @@ namespace Recolor
             finally
             {
                 defaultColor.ApplyToConsole();
+            }
+        }
+
+        static IEnumerable<string> ParseResponseFile(string path)
+        {
+            var lines = from line in File.ReadAllLines(path)
+                        where !line.StartsWith("#")
+                        select line;
+            return CommandLineToArgs(string.Join(" ", lines.ToArray()));
+        }
+
+        [DllImport("shell32.dll", SetLastError = true)]
+        static extern IntPtr CommandLineToArgvW(
+            [MarshalAs(UnmanagedType.LPWStr)] string lpCmdLine, out int pNumArgs);
+
+        static string[] CommandLineToArgs(string commandLine)
+        {
+            if (string.IsNullOrEmpty(commandLine))
+            {
+                //
+                // CommandLineToArgvW returns the path to the current
+                // executable file if the command line argument is an empty
+                // string so avoid calling it and return an empty array
+                // instead.
+                //
+
+                return new string[0];
+            }
+
+            int argc;
+            var argv = CommandLineToArgvW(commandLine, out argc);
+            if (argv == IntPtr.Zero)
+                throw new Win32Exception();
+            try
+            {
+                var args = new string[argc];
+                for (var i = 0; i < args.Length; i++)
+                {
+                    var p = Marshal.ReadIntPtr(argv, i * IntPtr.Size);
+                    args[i] = Marshal.PtrToStringUni(p);
+                }
+
+                return args;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(argv);
             }
         }
 
