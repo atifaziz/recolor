@@ -39,8 +39,8 @@ namespace Recolor
         [DebuggerDisplay("Foreground = {Foreground}, Background = {Background}")]
         struct Color : IEquatable<Color>
         {
-            public ConsoleColor? Foreground { get; private set; }
-            public ConsoleColor? Background { get; private set; }
+            public ConsoleColor? Foreground { get; }
+            public ConsoleColor? Background { get; }
 
             public Color(ConsoleColor? foreground, ConsoleColor? background) : this()
             {
@@ -54,20 +54,14 @@ namespace Recolor
                 if (Foreground != null) onForeground(Foreground.Value);
             }
 
-            public bool Equals(Color other)
-            {
-                return Foreground == other.Foreground && Background == other.Background;
-            }
+            public bool Equals(Color other) =>
+                Foreground == other.Foreground && Background == other.Background;
 
-            public override bool Equals(object obj)
-            {
-                return obj is Color && Equals((Color) obj);
-            }
+            public override bool Equals(object obj) =>
+                obj is Color && Equals((Color) obj);
 
-            public override int GetHashCode()
-            {
-                return unchecked((Foreground.GetHashCode() * 397) ^ Background.GetHashCode());
-            }
+            public override int GetHashCode() =>
+                unchecked((Foreground.GetHashCode() * 397) ^ Background.GetHashCode());
 
             public static Color Parse(string input)
             {
@@ -86,12 +80,9 @@ namespace Recolor
                 return color;
             }
 
-            static bool IsHexChar(char ch)
-            {
-                return (ch >= '0' && ch <= '9')
-                    || (ch >= 'a' && ch <= 'f')
-                    || (ch >= 'A' && ch <= 'F');
-            }
+            static bool IsHexChar(char ch) => (ch >= '0' && ch <= '9')
+                                           || (ch >= 'a' && ch <= 'f')
+                                           || (ch >= 'A' && ch <= 'F');
 
             static ConsoleColor? ParseConsoleColor(string input)
             {
@@ -102,19 +93,17 @@ namespace Recolor
                      : (ConsoleColor?)null;
             }
 
-            public void ApplyToConsole()
-            {
-                Do(fg => Console.ForegroundColor = fg, bg => Console.BackgroundColor = bg);
-            }
+            public void ApplyToConsole() => Do(fg => Console.ForegroundColor = fg,
+                                               bg => Console.BackgroundColor = bg);
         }
 
         [DebuggerDisplay("{Index}...{End} ({Length})")]
         struct Run : IEquatable<Run>
         {
-            public int Index    { get; private set;  }
-            public int Length   { get; private set;  }
-            public int End      { get { return Index + Length; } }
-            public bool IsEmpty { get { return Length == 0;    } }
+            public int Index    { get; }
+            public int Length   { get; }
+            public int End      => Index + Length;
+            public bool IsEmpty => Length == 0;
 
             public Run(int index, int length) : this()
             {
@@ -122,23 +111,21 @@ namespace Recolor
                 Length = length;
             }
 
-            public bool Equals(Run other) { return Index == other.Index && Length == other.Length; }
-            public override bool Equals(object obj) { return obj is Run && Equals((Run) obj); }
-            public override int GetHashCode() { return unchecked((Index * 397) ^ Length); }
+            public bool Equals(Run other) => Index == other.Index && Length == other.Length;
+            public override bool Equals(object obj) => obj is Run && Equals((Run) obj);
+            public override int GetHashCode() => unchecked((Index * 397) ^ Length);
 
-            public bool OverlapsWith(Run other)
-            {
-                return !IsEmpty && !other.IsEmpty
-                    && other.Index >= Index && other.Index < End;
-            }
+            public bool OverlapsWith(Run other) =>
+                !IsEmpty && !other.IsEmpty
+                && other.Index >= Index && other.Index < End;
         }
 
         [DebuggerDisplay("Run = {Run}, Color = {Color}, Priority = {Priority}")]
         sealed class Markup
         {
-            public Run   Run      { get; private set; }
-            public Color Color    { get; private set; }
-            public int   Priority { get; private set; }
+            public Run   Run      { get; }
+            public Color Color    { get; }
+            public int   Priority { get; }
 
             public Markup(int index, int length, Color color, int priority) :
                 this(new Run(index, length), color, priority) { }
@@ -150,11 +137,9 @@ namespace Recolor
                 Priority = priority;
             }
 
-            public T Split<T>(Run run, Func<Markup, Markup, T> selector)
-            {
-                return selector(new Markup(Run.Index, run.Index - Run.Index, Color, Priority),
-                                new Markup(run.End, Run.End - run.End, Color, Priority));
-            }
+            public T Split<T>(Run run, Func<Markup, Markup, T> selector) =>
+                selector(new Markup(Run.Index, run.Index - Run.Index, Color, Priority),
+                         new Markup(run.End, Run.End - run.End, Color, Priority));
         }
 
         delegate IEnumerable<Markup> Marker(string line);
@@ -163,10 +148,8 @@ namespace Recolor
         {
             public static readonly MarkupSlicer Stock = new MarkupSlicer();
 
-            public TResult Slice<TResult>(Markup input, Run run, Func<Markup, Markup, TResult> selector)
-            {
-                return input.Split(run, selector);
-            }
+            public TResult Slice<TResult>(Markup input, Run run, Func<Markup, Markup, TResult> selector) =>
+                input.Split(run, selector);
         }
 
         interface ISlicer<T>
@@ -178,7 +161,7 @@ namespace Recolor
         {
             readonly Comparison<T> _comparison;
             public Comparer(Comparison<T> comparison) { _comparison = comparison; }
-            public int Compare(T x, T y) { return _comparison(x, y); }
+            public int Compare(T x, T y) => _comparison(x, y);
         }
 
         static IEnumerable<Markup> Reflow(IEnumerable<Markup> runs, ISlicer<Markup> slicer)
@@ -210,17 +193,15 @@ namespace Recolor
             yield return ordered[0];
         }
 
-        static Marker CreateMarker(Regex regex, bool all, Color color, int priority)
-        {
-            return line => from matches in new[]
-                           {
-                               from Match m in regex.Matches(line)
-                               select m
-                           }
-                           from m in all ? matches : matches.Take(1)
-                           select new Run(m.Index, m.Length) into run
-                           select new Markup(run, color, priority);
-        }
+        static Marker CreateMarker(Regex regex, bool all, Color color, int priority) =>
+            line => from matches in new[]
+                    {
+                        from Match m in regex.Matches(line)
+                        select m
+                    }
+                    from m in all ? matches : matches.Take(1)
+                    select new Run(m.Index, m.Length) into run
+                    select new Markup(run, color, priority);
 
         static void Wain(IEnumerable<string> args)
         {
