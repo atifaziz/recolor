@@ -138,8 +138,17 @@ namespace Recolor
             }
 
             public T Split<T>(Run run, Func<Markup, Markup, T> selector) =>
-                selector(new Markup(Run.Index, run.Index - Run.Index, Color, Priority),
-                         new Markup(run.End, Run.End - run.End, Color, Priority));
+                // Undefined...
+                // if (run.End < Run.Index || run.Index > Run.End) throw new ArgumentOutOfRangeException("run");
+                // if (run.Index < Run.Index) throw new ArgumentOutOfRangeException("run");
+                run.End == Run.Index
+                ? selector(new Markup(run.Index, run.Length, Color, Priority), this)
+                : run.Index == Run.End
+                ? selector(this, new Markup(run.Index, run.Length, Color, Priority))
+                : selector(new Markup(Run.Index, run.Index - Run.Index, Color, Priority),
+                           run.End > Run.End
+                           ? new Markup(Run.End, run.End - Run.End, Color, Priority)
+                           : new Markup(run.End, Run.End - run.End, Color, Priority));
         }
 
         delegate IEnumerable<Markup> Marker(string line);
