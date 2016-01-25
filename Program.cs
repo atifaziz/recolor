@@ -30,6 +30,7 @@ namespace Recolor
     using AngryArrays.Splice;
     using Mannex;
     using Mannex.Collections.Generic;
+    using Mannex.IO;
     using Mannex.Reflection;
     using MoreLinq;
 
@@ -186,18 +187,18 @@ namespace Recolor
             while (ordered.Count > 1)
             {
                 var fst = ordered.PopAt(0);
-                var snd = ordered[0];
-                if (fst.Run.OverlapsWith(snd.Run))
+                for (var snd = ordered[0]; fst.Run.OverlapsWith(snd.Run); snd = ordered[0])
                 {
                     var splits = slicer.Slice(fst, snd.Run, (l, r) => new { Left = l, Right = r });
-                    yield return splits.Left;
-                    var index = ~ordered.BinarySearch(splits.Right, comparer);
-                    ordered.Insert(index, splits.Right);
+                    fst = splits.Left;
+                    if (splits.Right.Run.Length > 0)
+                    {
+                        var index = ~ordered.BinarySearch(splits.Right, comparer);
+                        ordered.Insert(index, splits.Right);
+                    }
                 }
-                else
-                {
-                    yield return fst;
-                }
+
+                yield return fst;
             }
 
             yield return ordered[0];
@@ -258,7 +259,7 @@ namespace Recolor
 
             try
             {
-                PaintLines(Console.In, markers.Prepend(line => new[] { new Markup(0, line.Length, defaultColor, -1) }));
+                PaintLines(Console.In, defaultColor, markers.Prepend(line => new[] { new Markup(0, line.Length, defaultColor, -1) }));
             }
             finally
             {
@@ -330,7 +331,7 @@ namespace Recolor
                 output.WriteLine(line);
         }
 
-        static void PaintLines(TextReader reader, IEnumerable<Marker> markers)
+        static void PaintLines(TextReader reader, Color defaultColor, IEnumerable<Marker> markers)
         {
             markers = markers.ToArray();
             for (var line = reader.ReadLine(); line != null; line = reader.ReadLine())
@@ -343,6 +344,7 @@ namespace Recolor
                     markup.Color.ApplyToConsole();
                     Console.Write(line.Substring(markup.Run.Index, markup.Run.Length));
                 }
+                defaultColor.ApplyToConsole();
                 Console.WriteLine();
             }
         }
