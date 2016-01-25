@@ -27,6 +27,7 @@ namespace Recolor
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
+    using AngryArrays.Splice;
     using Mannex;
     using Mannex.Collections.Generic;
     using Mannex.Reflection;
@@ -212,9 +213,14 @@ namespace Recolor
                     select new Run(m.Index, m.Length) into run
                     select new Markup(run, color, priority);
 
-        static void Wain(IEnumerable<string> args)
+        static void Wain(string[] args)
         {
-            args = args.ToArray();
+            var debug = Array.FindIndex(args, arg => "--debug".Equals(arg, StringComparison.OrdinalIgnoreCase));
+            if (debug >= 0)
+            {
+                Debugger.Launch();
+                args = args.Splice(debug, 1);
+            }
 
             if (args.Any(arg => "-?".Equals(arg, StringComparison.OrdinalIgnoreCase)
                              || "-h".Equals(arg, StringComparison.OrdinalIgnoreCase)
@@ -224,7 +230,7 @@ namespace Recolor
                 return;
             }
 
-            args =
+            var tail =
                 from arg in args
                 select !arg.StartsWith("@")
                      ? new[] { arg }.AsEnumerable()
@@ -236,7 +242,7 @@ namespace Recolor
 
             var defaultColor = new Color(Console.ForegroundColor, Console.BackgroundColor);
             var markers =
-                from arg in args.Select((spec, i) => new { Spec = spec, Priority = i })
+                from arg in tail.Select((spec, i) => new { Spec = spec, Priority = i })
                 let tokens = arg.Spec.Split(StringSeparatorStock.Equal, 2, StringSplitOptions.RemoveEmptyEntries)
                 where tokens.Length > 1
                 select new
