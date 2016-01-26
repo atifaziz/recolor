@@ -63,6 +63,9 @@ namespace Recolor
             public override int GetHashCode() =>
                 unchecked((Foreground.GetHashCode() * 397) ^ Background.GetHashCode());
 
+            public static bool operator ==(Color a, Color b) => a.Equals(b);
+            public static bool operator !=(Color a, Color b) => !(a == b);
+
             public static Color Parse(string input)
             {
                 Color color;
@@ -294,34 +297,27 @@ namespace Recolor
                 }
 
                 {
-                    var markups =
-                        from g in colors.Take(line.Length)
-                                        .Index()
-                                        .GroupAdjacent(e => e.Value, e => e.Key)
-                        select new Markup(FirstLast(g, (fst, lst) => new Run(fst, lst - fst + 1)), g.Key);
-
-                    foreach (var markup in markups)
+                    var anchor = 0;
+                    var cc = default(Color);
+                    for (var i = 0; i < line.Length; i++)
                     {
-                        markup.Color.ApplyToConsole();
-                        Console.Write(line.Substring(markup.Run.Index, markup.Run.Length));
+                        var color = colors[i];
+                        if (color != cc)
+                        {
+                            cc.ApplyToConsole();
+                            Console.Write(line.Substring(anchor, i - anchor));
+                            anchor = i;
+                            cc = color;
+                        }
+                    }
+                    if (anchor < line.Length)
+                    {
+                        cc.ApplyToConsole();
+                        Console.Write(line.Substring(anchor, line.Length - anchor));
                     }
                     defaultColor.ApplyToConsole();
                     Console.WriteLine();
                 }
-            }
-        }
-
-        static TResult FirstLast<T, TResult>(IEnumerable<T> source, Func<T, T, TResult> selector)
-        {
-            using (var e = source.GetEnumerator())
-            {
-                if (!e.MoveNext())
-                    throw new InvalidOperationException();
-                var first = e.Current;
-                var last = first;
-                while (e.MoveNext())
-                    last = e.Current;
-                return selector(first, last);
             }
         }
 

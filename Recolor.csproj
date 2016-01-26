@@ -45,8 +45,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.g.tt</DependentUpon>
     </Compile>
-    <Compile Include="MoreLinq\MoreEnumerable.GroupAdjacent.cs" />
-    <Compile Include="MoreLinq\MoreEnumerable.Index.cs" />
     <Compile Include="MoreLinq\MoreEnumerable.Prepend.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="AssemblyInfo.cs" />
