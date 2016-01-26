@@ -29,7 +29,6 @@ namespace Recolor
     using System.Text.RegularExpressions;
     using AngryArrays.Splice;
     using Mannex;
-    using Mannex.Collections.Generic;
     using Mannex.Reflection;
     using MoreLinq;
 
@@ -67,7 +66,7 @@ namespace Recolor
             public static Color Parse(string input)
             {
                 Color color;
-                if ((input.Length > 0 && IsHexChar(input[0]))
+                if (input.Length > 0 && IsHexChar(input[0])
                     && (input.Length == 1 || (input.Length == 2 && IsHexChar(input[1]))))
                 {
                     var n = int.Parse(input, NumberStyles.HexNumber);
@@ -75,8 +74,9 @@ namespace Recolor
                 }
                 else
                 {
-                    var tokens = input.Split(StringSeparatorStock.Slash, 2, StringSplitOptions.RemoveEmptyEntries);
-                    color = new Color(ParseConsoleColor(tokens[0]), tokens.Length > 1 ? ParseConsoleColor(tokens[1]) : null);
+                    var tokens = input.Split(StringSeparatorStock.Slash, 2);
+                    color = new Color(ParseConsoleColor(tokens[0]),
+                                      tokens.Length > 1 ? ParseConsoleColor(tokens[1]) : null);
                 }
                 return color;
             }
@@ -87,6 +87,7 @@ namespace Recolor
 
             static ConsoleColor? ParseConsoleColor(string input)
             {
+                if (input.Length == 0) return null;
                 if (!Regex.IsMatch(input, " *[a-zA-Z]+ *", RegexOptions.CultureInvariant))
                     throw new FormatException("Color name syntax error.");
                 return input.Length > 0
@@ -115,95 +116,27 @@ namespace Recolor
             public bool Equals(Run other) => Index == other.Index && Length == other.Length;
             public override bool Equals(object obj) => obj is Run && Equals((Run) obj);
             public override int GetHashCode() => unchecked((Index * 397) ^ Length);
-
-            public bool OverlapsWith(Run other) =>
-                !IsEmpty && !other.IsEmpty
-                && other.Index >= Index && other.Index < End;
         }
 
-        [DebuggerDisplay("Run = {Run}, Color = {Color}, Priority = {Priority}")]
+        [DebuggerDisplay("Run = {Run}, Color = {Color}")]
         sealed class Markup
         {
             public Run   Run      { get; }
             public Color Color    { get; }
-            public int   Priority { get; }
 
-            public Markup(int index, int length, Color color, int priority) :
-                this(new Run(index, length), color, priority) { }
+            public Markup(int index, int length, Color color) :
+                this(new Run(index, length), color) { }
 
-            public Markup(Run run, Color color, int priority)
+            public Markup(Run run, Color color)
             {
                 Run      = run;
                 Color    = color;
-                Priority = priority;
             }
-
-            public T Split<T>(Run run, Func<Markup, Markup, T> selector) =>
-                // Undefined...
-                // if (run.End < Run.Index || run.Index > Run.End) throw new ArgumentOutOfRangeException("run");
-                // if (run.Index < Run.Index) throw new ArgumentOutOfRangeException("run");
-                run.End == Run.Index
-                ? selector(new Markup(run.Index, run.Length, Color, Priority), this)
-                : run.Index == Run.End
-                ? selector(this, new Markup(run.Index, run.Length, Color, Priority))
-                : selector(new Markup(Run.Index, run.Index - Run.Index, Color, Priority),
-                           run.End > Run.End
-                           ? new Markup(Run.End, run.End - Run.End, Color, Priority)
-                           : new Markup(run.End, Run.End - run.End, Color, Priority));
         }
 
         delegate IEnumerable<Markup> Marker(string line);
 
-        sealed class MarkupSlicer : ISlicer<Markup>
-        {
-            public static readonly MarkupSlicer Stock = new MarkupSlicer();
-
-            public TResult Slice<TResult>(Markup input, Run run, Func<Markup, Markup, TResult> selector) =>
-                input.Split(run, selector);
-        }
-
-        interface ISlicer<T>
-        {
-            TResult Slice<TResult>(T input, Run run, Func<T, T, TResult> selector);
-        }
-
-        sealed class Comparer<T> : IComparer<T>
-        {
-            readonly Comparison<T> _comparison;
-            public Comparer(Comparison<T> comparison) { _comparison = comparison; }
-            public int Compare(T x, T y) => _comparison(x, y);
-        }
-
-        static IEnumerable<Markup> Reflow(IEnumerable<Markup> runs, ISlicer<Markup> slicer)
-        {
-            var q =
-                from e in runs
-                orderby e.Run.Index, e.Priority
-                select e;
-            var ordered = q.ToList();
-            var comparer = new Comparer<Markup>((a, b) => Comparables.Compare(a.Run.Index, a.Priority, b.Run.Index, b.Priority));
-
-            while (ordered.Count > 1)
-            {
-                var fst = ordered.PopAt(0);
-                for (var snd = ordered[0]; fst.Run.OverlapsWith(snd.Run); snd = ordered[0])
-                {
-                    var splits = slicer.Slice(fst, snd.Run, (l, r) => new { Left = l, Right = r });
-                    fst = splits.Left;
-                    if (splits.Right.Run.Length > 0)
-                    {
-                        var index = ~ordered.BinarySearch(splits.Right, comparer);
-                        ordered.Insert(index, splits.Right);
-                    }
-                }
-
-                yield return fst;
-            }
-
-            yield return ordered[0];
-        }
-
-        static Marker CreateMarker(Regex regex, bool all, Color color, int priority) =>
+        static Marker CreateMarker(Regex regex, bool all, Color color) =>
             line => from matches in new[]
                     {
                         from Match m in regex.Matches(line)
@@ -211,7 +144,7 @@ namespace Recolor
                     }
                     from m in all ? matches : matches.Take(1)
                     select new Run(m.Index, m.Length) into run
-                    select new Markup(run, color, priority);
+                    select new Markup(run, color);
 
         static void Wain(string[] args)
         {
@@ -242,23 +175,22 @@ namespace Recolor
 
             var defaultColor = new Color(Console.ForegroundColor, Console.BackgroundColor);
             var markers =
-                from arg in tail.Select((spec, i) => new { Spec = spec, Priority = i })
-                let tokens = arg.Spec.Split(StringSeparatorStock.Equal, 2, StringSplitOptions.RemoveEmptyEntries)
+                from arg in tail
+                let tokens = arg.Split(StringSeparatorStock.Equal, 2, StringSplitOptions.RemoveEmptyEntries)
                 where tokens.Length > 1
                 select new
                 {
-                    arg.Priority,
                     Color = tokens[0],
                     Regex = new Regex(tokens[1]),
                 }
                 into arg
                 let all = arg.Color.EndsWith("*")
                 let color = Color.Parse(all ? arg.Color.Slice(0, -1) : arg.Color)
-                select CreateMarker(arg.Regex, all, color, arg.Priority);
+                select CreateMarker(arg.Regex, all, color);
 
             try
             {
-                PaintLines(Console.In, defaultColor, markers.Prepend(line => new[] { new Markup(0, line.Length, defaultColor, -1) }));
+                PaintLines(Console.In, defaultColor, markers.Prepend(line => new[] { new Markup(0, line.Length, defaultColor) }));
             }
             finally
             {
@@ -333,18 +265,63 @@ namespace Recolor
         static void PaintLines(TextReader reader, Color defaultColor, IEnumerable<Marker> markers)
         {
             markers = markers.ToArray();
+            var colors = new Color[1024];
+
             for (var line = reader.ReadLine(); line != null; line = reader.ReadLine())
             {
-                // ReSharper disable once AccessToModifiedClosure
-                var runs = markers.SelectMany(m => m(line));
-                var markups = Reflow(runs, MarkupSlicer.Stock);
-                foreach (var markup in markups)
+                if (colors.Length < line.Length)
+                    colors = new Color[line.Length];
+
                 {
-                    markup.Color.ApplyToConsole();
-                    Console.Write(line.Substring(markup.Run.Index, markup.Run.Length));
+                    // ReSharper disable once AccessToModifiedClosure
+                    var markups = markers.SelectMany(m => m(line));
+                    var count = 0;
+                    foreach (var markup in markups)
+                    {
+                        count++;
+                        for (var i = markup.Run.Index; i < markup.Run.End; i++)
+                        {
+                            colors[i] = new Color(markup.Color.Foreground ?? colors[i].Foreground,
+                                                   markup.Color.Background ?? colors[i].Background);
+                        }
+                    }
+
+                    if (count == 0)
+                    {
+                        Console.WriteLine(line);
+                        continue;
+                    }
                 }
-                defaultColor.ApplyToConsole();
-                Console.WriteLine();
+
+                {
+                    var markups =
+                        from g in colors.Take(line.Length)
+                                        .Index()
+                                        .GroupAdjacent(e => e.Value, e => e.Key)
+                        select new Markup(FirstLast(g, (fst, lst) => new Run(fst, lst - fst + 1)), g.Key);
+
+                    foreach (var markup in markups)
+                    {
+                        markup.Color.ApplyToConsole();
+                        Console.Write(line.Substring(markup.Run.Index, markup.Run.Length));
+                    }
+                    defaultColor.ApplyToConsole();
+                    Console.WriteLine();
+                }
+            }
+        }
+
+        static TResult FirstLast<T, TResult>(IEnumerable<T> source, Func<T, T, TResult> selector)
+        {
+            using (var e = source.GetEnumerator())
+            {
+                if (!e.MoveNext())
+                    throw new InvalidOperationException();
+                var first = e.Current;
+                var last = first;
+                while (e.MoveNext())
+                    last = e.Current;
+                return selector(first, last);
             }
         }
 

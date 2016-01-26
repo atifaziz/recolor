@@ -45,6 +45,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.g.tt</DependentUpon>
     </Compile>
+    <Compile Include="MoreLinq\MoreEnumerable.GroupAdjacent.cs" />
+    <Compile Include="MoreLinq\MoreEnumerable.Index.cs" />
     <Compile Include="MoreLinq\MoreEnumerable.Prepend.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="AssemblyInfo.cs" />
@@ -56,7 +58,9 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AssemblyInfo.g.cs</LastGenOutput>
     </None>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
