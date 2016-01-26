@@ -38,8 +38,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Packages\AngryArrays\AngryArrays.cs" />
-    <Compile Include="App_Packages\Comparables\Comparables.cs" />
-    <Compile Include="App_Packages\Comparables\Comparables.g.cs" />
     <Compile Include="AssemblyInfo.g.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
