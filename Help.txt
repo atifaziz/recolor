@@ -22,11 +22,12 @@ A color is specified in one of three formats:
 
 Format 1 sets only the foreground color of the text whereas format 2 sets the
 foreground and background colors (separated by a forward-slash to mean
-foreground over background). The colors themselves are specified using the
-names listed below .In format 3, the colors are specified by two hex digits:
-the first corresponds to the background and the second the foreground. If
-only hex digit is given then it sets the foreground color. The color
-corresponding of each hex digits is shown below.
+foreground over background). FOREGROUND can be omitted to set just the
+background. The colors themselves are specified using the names listed below.
+In format 3, the colors are specified by two hex digits: the first corresponds
+to the background and the second the foreground. If only a single hex digit is
+given then it sets the foreground color. The color corresponding to each hex
+digits is shown below.
 
     0 = Black           8 = DarkGray
     1 = DarkBlue        9 = Blue
