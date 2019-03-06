@@ -30,7 +30,6 @@ namespace Recolor
     using AngryArrays.Splice;
     using Mannex;
     using Mannex.Reflection;
-    using MoreLinq;
 
     #endregion
 

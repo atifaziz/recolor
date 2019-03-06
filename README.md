@@ -2,7 +2,17 @@
 
 Colors text received over standard input based on regular expression patterns.
 
-The command-line usage is as follows:
+## Requirements
+
+- .NET Core 2.1 or later
+
+
+## Installation
+
+    dotnet tool install -g recolor
+
+
+## Usage
 
     recolor COLOR1=REGEX1 COLOR2=REGEX2 ... COLORN=REGEXN
 
@@ -49,4 +59,27 @@ digits is shown below.
 
 For `REGEX` syntax, see [Regular Expression Language Quick Reference][regex].
 
+
+## Building
+
+The .NET Core SDK is the minimum requirement.
+
+To build just the binaries on Windows, run:
+
+    .\build.cmd
+
+On Linux or macOS, run instead:
+
+    ./build.sh
+
+To build the binaries and the NuGet packages on Windows, run:
+
+    .\pack.cmd
+
+On Linux or macOS, run instead:
+
+    ./pack.sh
+
+
   [regex]: http://go.microsoft.com/fwlink/?LinkId=133231
+  [nupkg]: https://www.nuget.org/packages/Recolor/
