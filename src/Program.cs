@@ -92,7 +92,7 @@ namespace Recolor
                 if (!Regex.IsMatch(input, " *[a-zA-Z]+ *", RegexOptions.CultureInvariant))
                     throw new FormatException("Color name syntax error.");
                 return input.Length > 0
-                     ? (ConsoleColor)Enum.Parse(typeof(ConsoleColor), input, true)
+                     ? Enum.Parse<ConsoleColor>(input, true)
                      : (ConsoleColor?)null;
             }
 
