@@ -48,15 +48,15 @@ namespace Recolor
 
             public void Do(Action<ConsoleColor> onForeground, Action<ConsoleColor> onBackground)
             {
-                if (Background != null) onBackground(Background.Value);
-                if (Foreground != null) onForeground(Foreground.Value);
+                if (Background is ConsoleColor bg) onBackground(bg);
+                if (Foreground is ConsoleColor fg) onForeground(fg);
             }
 
             public bool Equals(Color other) =>
                 Foreground == other.Foreground && Background == other.Background;
 
             public override bool Equals(object obj) =>
-                obj is Color && Equals((Color) obj);
+                obj is Color color && Equals(color);
 
             public override int GetHashCode() =>
                 unchecked((Foreground.GetHashCode() * 397) ^ Background.GetHashCode());
@@ -115,7 +115,7 @@ namespace Recolor
             }
 
             public bool Equals(Run other) => Index == other.Index && Length == other.Length;
-            public override bool Equals(object obj) => obj is Run && Equals((Run) obj);
+            public override bool Equals(object obj) => obj is Run run && Equals(run);
             public override int GetHashCode() => unchecked((Index * 397) ^ Length);
         }
 
