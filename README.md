@@ -9,6 +9,8 @@ Colors text received over standard input based on regular expression patterns.
 
 ## Installation
 
+[Recolor is available as a .NET Core tool][nupkg] for installation:
+
     dotnet tool install -g recolor
 
 
