@@ -8,7 +8,8 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>recolor</ToolCommandName>
     <Description>Colors text over STDIN based on regular expression patterns.</Description>
-    <Copyright>Copyright © 2010 Atif Aziz. All rights reserved.</Copyright>
+    <Copyright>Copyright © 2010 Atif Aziz. All rights reserved.
+Portions Copyright © .NET Foundation and Contributors.</Copyright>
     <Authors>Atif Aziz</Authors>
     <Owners>Atif Aziz</Owners>
     <PackageProjectUrl>https://github.com/atifaziz/recolor</PackageProjectUrl>
