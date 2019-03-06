@@ -35,7 +35,7 @@ namespace Recolor
     static class Program
     {
         [DebuggerDisplay("Foreground = {Foreground}, Background = {Background}")]
-        struct Color : IEquatable<Color>
+        readonly struct Color : IEquatable<Color>
         {
             public ConsoleColor? Foreground { get; }
             public ConsoleColor? Background { get; }
@@ -101,7 +101,7 @@ namespace Recolor
         }
 
         [DebuggerDisplay("{Index}...{End} ({Length})")]
-        struct Run : IEquatable<Run>
+        readonly struct Run : IEquatable<Run>
         {
             public int Index    { get; }
             public int Length   { get; }
