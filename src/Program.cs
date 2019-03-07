@@ -24,6 +24,8 @@ namespace Recolor
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Net;
+    using System.Net.Http;
     using System.Text.RegularExpressions;
     using AngryArrays.Splice;
     using Mannex;
@@ -171,15 +173,30 @@ namespace Recolor
                 return;
             }
 
-            var tail = Enumerable.ToArray(
-                from arg in args
-                select !arg.StartsWith("@")
-                     ? new[] { arg }.AsEnumerable()
-                     : arg.Length == 1
-                     ? Enumerable.Empty<string>()
-                     : ParseResponseFile(arg.Substring(1)) into argz
-                from arg in argz
-                select arg);
+            string[] tail;
+
+            var http = new Lazy<HttpClient>(() => new HttpClient(new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.Deflate
+                                       | DecompressionMethods.GZip,
+            }));
+
+            try
+            {
+                tail = Enumerable.ToArray(
+                    from arg in args
+                    select !arg.StartsWith("@")
+                        ? new[] { arg }.AsEnumerable()
+                        : arg.Length == 1
+                            ? Enumerable.Empty<string>()
+                            : ParseResponseFile(arg.Substring(1), http) into argz
+                    from arg in argz
+                    select arg);
+            }
+            finally
+            {
+                http.Value.Dispose();
+            }
 
             if (verbose && tail.Any())
             {
@@ -215,13 +232,25 @@ namespace Recolor
             }
         }
 
-        static IEnumerable<string> ParseResponseFile(string path) =>
-            CommandLineParser.ParseArgumentsToList(
+        static IEnumerable<string> ParseResponseFile(string path, Lazy<HttpClient> http)
+        {
+            var lines
+                = Uri.TryCreate(path, UriKind.Absolute, out var url)
+                ? url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps
+                  ? http.Value.GetStringAsync(url)
+                              .GetAwaiter()
+                              .GetResult()
+                              .SplitIntoLines()
+                  : throw new NotSupportedException($"The URI scheme \"{url.Scheme}\" is not supported.")
+                : File.ReadLines(path);
+
+            return CommandLineParser.ParseArgumentsToList(
                 string.Join(" ",
-                    from line in File.ReadLines(path)
+                    from line in lines
                     where !string.IsNullOrWhiteSpace(line)
-                       && !line.StartsWith("#")
+                          && !line.StartsWith("#")
                     select line));
+        }
 
         static void ShowHelp(TextWriter output)
         {
