@@ -25,6 +25,13 @@ expression patterns are tested on each line only once unless a start-equal
 (`*=`) instead just an equal (`=`) is used to separate the color from the 
 regular expression pattern specification.
 
+Any command-line argument of the form `@FILE` is expanded with the contents of
+the response file identified by FILE. A response file specifies command-line
+arguments, one per line. Blank lines or lines in the response file starting
+with pound/hash (`#`) are ignored. More than one response file can be given.
+Processing of all arguments begins after expanding all response files to form
+a single command-line.
+
 A color is specified in one of three formats:
 
 1. FOREGROUND
