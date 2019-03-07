@@ -202,7 +202,7 @@ namespace Recolor
         static IEnumerable<string> ParseResponseFile(string path) =>
             CommandLineParser.ParseArgumentsToList(
                 string.Join(" ",
-                    from line in File.ReadAllLines(path)
+                    from line in File.ReadLines(path)
                     where !string.IsNullOrWhiteSpace(line)
                        && !line.StartsWith("#")
                     select line));
