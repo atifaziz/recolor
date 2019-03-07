@@ -173,30 +173,15 @@ namespace Recolor
                 return;
             }
 
-            string[] tail;
-
-            var http = new Lazy<HttpClient>(() => new HttpClient(new HttpClientHandler
-            {
-                AutomaticDecompression = DecompressionMethods.Deflate
-                                       | DecompressionMethods.GZip,
-            }));
-
-            try
-            {
-                tail = Enumerable.ToArray(
-                    from arg in args
-                    select !arg.StartsWith("@")
-                        ? new[] { arg }.AsEnumerable()
-                        : arg.Length == 1
-                            ? Enumerable.Empty<string>()
-                            : ParseResponseFile(arg.Substring(1), http) into argz
-                    from arg in argz
-                    select arg);
-            }
-            finally
-            {
-                http.Value.Dispose();
-            }
+            var tail = Enumerable.ToArray(
+                from arg in args
+                select !arg.StartsWith("@")
+                    ? new[] { arg }.AsEnumerable()
+                    : arg.Length == 1
+                        ? Enumerable.Empty<string>()
+                        : ParseResponseFile(arg.Substring(1)) into argz
+                from arg in argz
+                select arg);
 
             if (verbose && tail.Any())
             {
@@ -232,17 +217,19 @@ namespace Recolor
             }
         }
 
-        static IEnumerable<string> ParseResponseFile(string path, Lazy<HttpClient> http)
+        static IEnumerable<string> ParseResponseFile(string path)
         {
+            if (path.Length > 1 && path[0] == '~'
+                                && path[1] == Path.DirectorySeparatorChar
+                                || path[1] == Path.AltDirectorySeparatorChar)
+            {
+                path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), path.AsSpan(2));
+            }
+
             var lines
-                = Uri.TryCreate(path, UriKind.Absolute, out var url)
-                ? url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps
-                  ? http.Value.GetStringAsync(url)
-                              .GetAwaiter()
-                              .GetResult()
-                              .SplitIntoLines()
-                  : throw new NotSupportedException($"The URI scheme \"{url.Scheme}\" is not supported.")
-                : File.ReadLines(path);
+                = GetSearchPaths(path).FirstOrDefault(File.Exists) is string existingPath
+                ? File.ReadLines(existingPath)
+                : throw new FileNotFoundException($"Unable to find the response file \"{path}\".");
 
             return CommandLineParser.ParseArgumentsToList(
                 string.Join(" ",
@@ -250,6 +237,17 @@ namespace Recolor
                     where !string.IsNullOrWhiteSpace(line)
                           && !line.StartsWith("#")
                     select line));
+
+            IEnumerable<string> GetSearchPaths(string basePath)
+            {
+                yield return basePath;
+                if (basePath[0] != '~' || basePath.IndexOfAny(StringSeparatorStock.DirectorySeparators) >= 0)
+                    yield break;
+                var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                const string dotname = ".recolor";
+                yield return Path.Join(userProfilePath, dotname, basePath.Substring(1) + ".rsp");
+                yield return Path.Join(userProfilePath, dotname, basePath.AsSpan(1));
+            }
         }
 
         static void ShowHelp(TextWriter output)
@@ -329,6 +327,12 @@ namespace Recolor
         {
             public static readonly char[] Slash = { '/' };
             public static readonly char[] Equal = { '=' };
+
+            public static readonly char[] DirectorySeparators =
+            {
+                Path.DirectorySeparatorChar,
+                Path.AltDirectorySeparatorChar
+            };
         }
 
         static int Main(string[] args)

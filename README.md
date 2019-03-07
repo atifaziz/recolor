@@ -29,9 +29,14 @@ Any command-line argument of the form `@FILE` is expanded with the contents of
 the response file identified by FILE. A response file specifies command-line
 arguments, one per line. Blank lines or lines in the response file starting
 with pound/hash (`#`) are ignored. More than one response file can be given.
-If FILE is a URL of the HTTP or HTTPS scheme then the resource is used as the
-response file content. Processing of all arguments begins after expanding all
-response files to form a single command-line.
+If FILE starts with (`~`) and is not a path (i.e. contains no directory
+separators) then either `~/.recolor/FILE.rsp` or `~/.recolor/FILE` will be
+sought and used as the response file instead (where `~` is the user home).
+Processing of all arguments begins after expanding all response files to form
+a single command-line.
+
+Processing of all arguments begins after expanding all response files to form
+a single command-line.
 
 A color is specified in one of three formats:
 
