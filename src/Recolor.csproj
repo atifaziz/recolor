@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <LangVersion>7.2</LangVersion>
-    <VersionPrefix>2.3.0</VersionPrefix>
+    <VersionPrefix>2.4.0</VersionPrefix>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>recolor</ToolCommandName>
     <Description>Colors text over STDIN based on regular expression patterns.</Description>
