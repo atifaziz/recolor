@@ -148,16 +148,16 @@ namespace Recolor
 
         static void Wain(string[] args)
         {
-            var debug = Array.FindIndex(args, arg => "--debug".Equals(arg, StringComparison.OrdinalIgnoreCase));
+            var debug = Array.FindIndex(args, arg => arg == "--debug");
             if (debug >= 0)
             {
                 Debugger.Launch();
                 args = args.Splice(debug, 1);
             }
 
-            if (args.Any(arg => "-?".Equals(arg, StringComparison.OrdinalIgnoreCase)
-                             || "-h".Equals(arg, StringComparison.OrdinalIgnoreCase)
-                             || "--help".Equals(arg, StringComparison.OrdinalIgnoreCase)))
+            if (args.Any(arg => arg == "-?"
+                             || arg == "-h"
+                             || arg == "--help"))
             {
                 ShowHelp(Console.Out);
                 return;
