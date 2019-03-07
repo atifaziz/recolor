@@ -199,13 +199,12 @@ namespace Recolor
             }
         }
 
-        static IEnumerable<string> ParseResponseFile(string path)
-        {
-            var lines = from line in File.ReadAllLines(path)
-                        where !line.StartsWith("#")
-                        select line;
-            return CommandLineToArgs(string.Join(" ", lines.ToArray()));
-        }
+        static IEnumerable<string> ParseResponseFile(string path) =>
+            CommandLineToArgs(
+                string.Join(" ",
+                    from line in File.ReadAllLines(path)
+                    where !line.StartsWith("#")
+                    select line));
 
         static IEnumerable<string> CommandLineToArgs(string commandLine) =>
             ParseArgumentsIntoList(commandLine);
