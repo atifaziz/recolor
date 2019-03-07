@@ -35,9 +35,6 @@ sought and used as the response file instead (where `~` is the user home).
 Processing of all arguments begins after expanding all response files to form
 a single command-line.
 
-Processing of all arguments begins after expanding all response files to form
-a single command-line.
-
 A color is specified in one of three formats:
 
 1. FOREGROUND
