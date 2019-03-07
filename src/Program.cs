@@ -148,22 +148,30 @@ namespace Recolor
 
         static void Wain(string[] args)
         {
-            var debug = Array.FindIndex(args, arg => arg == "--debug");
-            if (debug >= 0)
+            bool PopSwitch(string name1, string name2 = null, string name3 = null)
             {
-                Debugger.Launch();
-                args = args.Splice(debug, 1);
+                var i = Array.FindIndex(args, arg => arg == name1
+                                                  || arg == name2
+                                                  || arg == name3);
+                var found = i >= 0;
+                if (found)
+                    args = args.Splice(i, 1);
+                return found;
             }
 
-            if (args.Any(arg => arg == "-?"
-                             || arg == "-h"
-                             || arg == "--help"))
+            var debug = PopSwitch("--debug");
+            if (debug)
+                Debugger.Launch();
+
+            var verbose = PopSwitch("--verbose", "-v");
+
+            if (PopSwitch("-?", "-h", "--help"))
             {
                 ShowHelp(Console.Out);
                 return;
             }
 
-            var tail =
+            var tail = Enumerable.ToArray(
                 from arg in args
                 select !arg.StartsWith("@")
                      ? new[] { arg }.AsEnumerable()
@@ -171,7 +179,15 @@ namespace Recolor
                      ? Enumerable.Empty<string>()
                      : ParseResponseFile(arg.Substring(1)) into argz
                 from arg in argz
-                select arg;
+                select arg);
+
+            if (verbose && tail.Any())
+            {
+                Console.Error.WriteLine(FormattableString.Invariant($"Command-line arguments ({tail.Length}):"));
+
+                foreach (var arg in tail)
+                    Console.Error.WriteLine("- " + arg);
+            }
 
             var defaultColor = new Color(Console.ForegroundColor, Console.BackgroundColor);
             var markers =
