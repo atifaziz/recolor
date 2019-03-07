@@ -203,7 +203,8 @@ namespace Recolor
             CommandLineParser.ParseArgumentsToList(
                 string.Join(" ",
                     from line in File.ReadAllLines(path)
-                    where !line.StartsWith("#")
+                    where !string.IsNullOrWhiteSpace(line)
+                       && !line.StartsWith("#")
                     select line));
 
         static void ShowHelp(TextWriter output)
