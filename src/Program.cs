@@ -176,7 +176,8 @@ namespace Recolor
             var defaultColor = new Color(Console.ForegroundColor, Console.BackgroundColor);
             var markers =
                 from arg in tail
-                let tokens = arg.Split(StringSeparatorStock.Equal, 2, StringSplitOptions.RemoveEmptyEntries)
+                let tokens = arg.TrimStart()
+                                .Split(StringSeparatorStock.Equal, 2, StringSplitOptions.RemoveEmptyEntries)
                 where tokens.Length > 1
                 select new
                 {
