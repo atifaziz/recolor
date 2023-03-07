@@ -22,7 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using AngryArrays.Splice;
-using Mannex;
 using Recolor;
 
 try
@@ -228,7 +227,7 @@ static partial class Program
                        .Replace("$VERSION", ThisAssembly.Info.FileVersion)
                        .Replace("$COPYRIGHT", ThisAssembly.Info.Copyright);
 
-        foreach (var line in help.Trim().SplitIntoLines())
+        foreach (var line in Regex.Split(help.Trim(), @"\r?\n"))
             output.WriteLine(line);
     }
 
