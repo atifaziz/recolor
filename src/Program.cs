@@ -14,10 +14,6 @@
 //
 #endregion
 
-namespace Recolor;
-
-#region Imports
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,10 +24,21 @@ using System.Text.RegularExpressions;
 using AngryArrays.Splice;
 using Mannex;
 using Mannex.Reflection;
+using Recolor;
 
-#endregion
+try
+{
+    Wain(args);
+    return 0;
+}
+catch (Exception ex)
+{
+    Console.Error.WriteLine(ex.Message);
+    Trace.WriteLine(ex.ToString());
+    return 1;
+}
 
-static class Program
+static partial class Program
 {
     [DebuggerDisplay("Foreground = {Foreground}, Background = {Background}")]
     readonly record struct Color(ConsoleColor? Foreground, ConsoleColor? Background)
@@ -296,20 +303,5 @@ static class Program
             Path.DirectorySeparatorChar,
             Path.AltDirectorySeparatorChar
         };
-    }
-
-    static int Main(string[] args)
-    {
-        try
-        {
-            Wain(args);
-            return 0;
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
-            Trace.WriteLine(ex.ToString());
-            return 1;
-        }
     }
 }
