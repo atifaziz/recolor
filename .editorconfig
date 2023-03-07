@@ -23,6 +23,10 @@ indent_size = 4
 max_line_length = 100
 
 [*.cs]
+
+# Namespace declaration preferences
+csharp_style_namespace_declarations = file_scoped
+
 # Prefer "var" everywhere
 csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
