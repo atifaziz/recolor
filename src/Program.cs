@@ -57,7 +57,7 @@ static void Run(string[] args)
 
     if (PopSwitch("-?", "-h", "--help"))
     {
-        Help.Print(Console.Out);
+        Help.Print(Path.GetFileName(Environment.ProcessPath), Console.Out);
         return;
     }
 
@@ -275,9 +275,9 @@ delegate IEnumerable<Markup> Marker(string line);
 
 static class Help
 {
-    public static void Print(TextWriter output)
+    public static void Print(string name, TextWriter output)
     {
-        foreach (var line in Regex.Split(Text.Trim(), @"\r?\n"))
+        foreach (var line in Regex.Split(Text.Replace("$NAME", name).Trim(), @"\r?\n"))
             output.WriteLine(line);
     }
 
