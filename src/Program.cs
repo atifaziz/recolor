@@ -292,7 +292,7 @@ static partial class Program
     }
 
     const string Help = $$"""
-        {{ThisAssembly.Info.Product}} {{ThisAssembly.Info.Version}}
+        {{ThisAssembly.Info.Product}} {{ThisAssembly.Info.InformationalVersion}})
         {{ThisAssembly.Info.Copyright}}
 
         Colors text received over standard input based on regular expression patterns.
