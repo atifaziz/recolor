@@ -59,7 +59,7 @@ static partial class Program
             }
             else
             {
-                var tokens = input.Split(StringSeparatorStock.Slash, 2);
+                var tokens = input.Split('/', 2);
                 color = new Color(ParseConsoleColor(tokens[0]),
                                   tokens.Length > 1 ? ParseConsoleColor(tokens[1]) : null);
             }
@@ -166,7 +166,7 @@ static partial class Program
         var markers =
             from arg in tail
             let tokens = arg.TrimStart()
-                            .Split(StringSeparatorStock.Equal, 2, StringSplitOptions.RemoveEmptyEntries)
+                            .Split('=', 2, StringSplitOptions.RemoveEmptyEntries)
             where tokens.Length > 1
             select new
             {
@@ -290,9 +290,6 @@ static partial class Program
 
     static class StringSeparatorStock
     {
-        public static readonly char[] Slash = { '/' };
-        public static readonly char[] Equal = { '=' };
-
         public static readonly char[] DirectorySeparators =
         {
             Path.DirectorySeparatorChar,
