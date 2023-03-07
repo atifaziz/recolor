@@ -287,7 +287,7 @@ namespace Recolor
                         for (var i = markup.Run.Index; i < markup.Run.End; i++)
                         {
                             colors[i] = new Color(markup.Color.Foreground ?? colors[i].Foreground,
-                                                   markup.Color.Background ?? colors[i].Background);
+                                                  markup.Color.Background ?? colors[i].Background);
                         }
                     }
 
