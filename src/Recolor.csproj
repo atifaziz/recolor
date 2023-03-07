@@ -35,6 +35,7 @@ Portions Copyright © .NET Foundation and Contributors.</Copyright>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="ThisAssembly.AssemblyInfo" Version="1.2.9" />
   </ItemGroup>
 
   <ItemGroup>

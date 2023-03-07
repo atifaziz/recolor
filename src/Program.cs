@@ -222,13 +222,11 @@ namespace Recolor
             var type = typeof(Program);
             var assembly = type.Assembly;
 
-            var vi = FileVersionInfo.GetVersionInfo(assembly.Location);
-
             var help = assembly.GetManifestResourceString(type, "Help.txt")
-                               .Replace("$NAME", Path.GetFileNameWithoutExtension(vi.FileName))
-                               .Replace("$PRODUCT", vi.ProductName)
-                               .Replace("$VERSION", vi.FileVersion)
-                               .Replace("$COPYRIGHT", vi.LegalCopyright);
+                               .Replace("$NAME", Path.GetFileNameWithoutExtension(Environment.ProcessPath))
+                               .Replace("$PRODUCT", ThisAssembly.Info.Product)
+                               .Replace("$VERSION", ThisAssembly.Info.FileVersion)
+                               .Replace("$COPYRIGHT", ThisAssembly.Info.Copyright);
 
             foreach (var line in help.Trim().SplitIntoLines())
                 output.WriteLine(line);
