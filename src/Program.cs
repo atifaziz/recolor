@@ -36,34 +36,13 @@ namespace Recolor
     static class Program
     {
         [DebuggerDisplay("Foreground = {Foreground}, Background = {Background}")]
-        readonly struct Color : IEquatable<Color>
+        readonly record struct Color(ConsoleColor? Foreground, ConsoleColor? Background)
         {
-            public ConsoleColor? Foreground { get; }
-            public ConsoleColor? Background { get; }
-
-            public Color(ConsoleColor? foreground, ConsoleColor? background) : this()
-            {
-                Foreground = foreground;
-                Background = background;
-            }
-
             public void Do(Action<ConsoleColor> onForeground, Action<ConsoleColor> onBackground)
             {
                 if (Background is ConsoleColor bg) onBackground(bg);
                 if (Foreground is ConsoleColor fg) onForeground(fg);
             }
-
-            public bool Equals(Color other) =>
-                Foreground == other.Foreground && Background == other.Background;
-
-            public override bool Equals(object obj) =>
-                obj is Color color && Equals(color);
-
-            public override int GetHashCode() =>
-                unchecked((Foreground.GetHashCode() * 397) ^ Background.GetHashCode());
-
-            public static bool operator ==(Color a, Color b) => a.Equals(b);
-            public static bool operator !=(Color a, Color b) => !(a == b);
 
             public static Color Parse(string input)
             {
@@ -102,22 +81,10 @@ namespace Recolor
         }
 
         [DebuggerDisplay("{Index}...{End} ({Length})")]
-        readonly struct Run : IEquatable<Run>
+        readonly record struct Run(int Index, int Length)
         {
-            public int Index    { get; }
-            public int Length   { get; }
             public int End      => Index + Length;
             public bool IsEmpty => Length == 0;
-
-            public Run(int index, int length) : this()
-            {
-                Index = index;
-                Length = length;
-            }
-
-            public bool Equals(Run other) => Index == other.Index && Length == other.Length;
-            public override bool Equals(object obj) => obj is Run run && Equals(run);
-            public override int GetHashCode() => unchecked((Index * 397) ^ Length);
         }
 
         [DebuggerDisplay("Run = {Run}, Color = {Color}")]
