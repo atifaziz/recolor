@@ -16,6 +16,7 @@ Portions Copyright © .NET Foundation and Contributors.</Copyright>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageTags>regex;dotnet-tool;color</PackageTags>
     <PackageLicenseFile>COPYING.txt</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageOutputPath>..\dist</PackageOutputPath>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
@@ -36,6 +37,7 @@ Portions Copyright © .NET Foundation and Contributors.</Copyright>
     <None Remove="Help.txt" />
     <EmbeddedResource Include="Help.txt" />
     <None Include="..\COPYING.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
+    <None Include="..\README.md" Pack="true" PackagePath="$(PackageReadmeFile)" />
   </ItemGroup>
 
 </Project>
