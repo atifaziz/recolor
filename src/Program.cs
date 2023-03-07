@@ -73,7 +73,7 @@ namespace Recolor
                     throw new FormatException("Color name syntax error.");
                 return input.Length > 0
                      ? Enum.Parse<ConsoleColor>(input, true)
-                     : (ConsoleColor?)null;
+                     : null;
             }
 
             public void ApplyToConsole() => Do(fg => Console.ForegroundColor = fg,
