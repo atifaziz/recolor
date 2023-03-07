@@ -4,7 +4,7 @@ Colors text received over standard input based on regular expression patterns.
 
 ## Requirements
 
-- .NET Core 2.1 or later
+- .NET 6.0 or later
 
 
 ## Installation
