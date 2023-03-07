@@ -26,7 +26,7 @@ using Recolor;
 
 try
 {
-    Wain(args);
+    Run(args);
     return 0;
 }
 catch (Exception ex)
@@ -36,77 +36,73 @@ catch (Exception ex)
     return 1;
 }
 
-static partial class Program
+static void Run(string[] args)
 {
-    [DebuggerDisplay("Foreground = {Foreground}, Background = {Background}")]
-    readonly record struct Color(ConsoleColor? Foreground, ConsoleColor? Background)
+    bool PopSwitch(string name1, string name2 = null, string name3 = null)
     {
-        public void Do(Action<ConsoleColor> onForeground, Action<ConsoleColor> onBackground)
-        {
-            if (Background is { } bg) onBackground(bg);
-            if (Foreground is { } fg) onForeground(fg);
-        }
-
-        public static Color Parse(string input)
-        {
-            Color color;
-            if (input is [var ch1, ..] && IsHexChar(ch1)
-                && (input is [_] || (input is [_, var ch2] && IsHexChar(ch2))))
-            {
-                var n = int.Parse(input, NumberStyles.HexNumber);
-                color = new Color((ConsoleColor) (n & 0xf), (ConsoleColor) (n >> 4));
-            }
-            else
-            {
-                var tokens = input.Split('/', 2);
-                color = new Color(ParseConsoleColor(tokens[0]),
-                                  tokens is [_, var t] ? ParseConsoleColor(t) : null);
-            }
-            return color;
-        }
-
-        static bool IsHexChar(char ch) => ch is >= '0' and <= '9'
-                                             or >= 'a' and <= 'f'
-                                             or >= 'A' and <= 'F';
-
-        static ConsoleColor? ParseConsoleColor(string input)
-        {
-            if (input.Length == 0) return null;
-            if (!Regex.IsMatch(input, " *[a-zA-Z]+ *", RegexOptions.CultureInvariant))
-                throw new FormatException("Color name syntax error.");
-            return input.Length > 0
-                 ? Enum.Parse<ConsoleColor>(input, true)
-                 : null;
-        }
-
-        public void ApplyToConsole() => Do(fg => Console.ForegroundColor = fg,
-                                           bg => Console.BackgroundColor = bg);
+        var i = Array.FindIndex(args, arg => arg == name1
+                                          || arg == name2
+                                          || arg == name3);
+        var found = i >= 0;
+        if (found)
+            args = args.Splice(i, 1);
+        return found;
     }
 
-    [DebuggerDisplay("{Index}...{End} ({Length})")]
-    readonly record struct Run(int Index, int Length)
+    var debug = PopSwitch("--debug");
+    if (debug)
+        Debugger.Launch();
+
+    var verbose = PopSwitch("--verbose", "-v");
+
+    if (PopSwitch("-?", "-h", "--help"))
     {
-        public int End      => Index + Length;
-        public bool IsEmpty => Length == 0;
+        Help.Print(Console.Out);
+        return;
     }
 
-    [DebuggerDisplay("Run = {Run}, Color = {Color}")]
-    sealed class Markup
+    var tail = Enumerable.ToArray(
+        from arg in args
+        select !arg.StartsWith("@")
+            ? new[] { arg }.AsEnumerable()
+            : arg.Length == 1
+                ? Enumerable.Empty<string>()
+                : ParseResponseFile(arg[1..]) into argz
+        from arg in argz
+        select arg);
+
+    if (verbose && tail.Any())
     {
-        public Run   Run      { get; }
-        public Color Color    { get; }
+        Console.Error.WriteLine(FormattableString.Invariant($"Command-line arguments ({tail.Length}):"));
 
-        public Markup(int index, int length, Color color) :
-            this(new Run(index, length), color) { }
+        foreach (var arg in tail)
+            Console.Error.WriteLine("- " + arg);
+    }
 
-        public Markup(Run run, Color color)
+    var defaultColor = new Color(Console.ForegroundColor, Console.BackgroundColor);
+    var markers =
+        from arg in tail
+        let tokens = arg.TrimStart()
+                        .Split('=', 2, StringSplitOptions.RemoveEmptyEntries)
+        where tokens.Length > 1
+        select new
         {
-            Run      = run;
-            Color    = color;
+            Color = tokens[0],
+            Regex = new Regex(tokens[1]),
         }
-    }
+        into arg
+        let all = arg.Color.EndsWith("*")
+        let color = Color.Parse(all ? arg.Color[..^1] : arg.Color)
+        select CreateMarker(arg.Regex, all, color);
 
-    delegate IEnumerable<Markup> Marker(string line);
+    try
+    {
+        PaintLines(Console.In, defaultColor, markers.Prepend(line => new[] { new Markup(0, line.Length, defaultColor) }));
+    }
+    finally
+    {
+        defaultColor.ApplyToConsole();
+    }
 
     static Marker CreateMarker(Regex regex, bool all, Color color) =>
         line => from matches in new[]
@@ -117,114 +113,6 @@ static partial class Program
                 from m in all ? matches : matches.Take(1)
                 select new Run(m.Index, m.Length) into run
                 select new Markup(run, color);
-
-    static void Wain(string[] args)
-    {
-        bool PopSwitch(string name1, string name2 = null, string name3 = null)
-        {
-            var i = Array.FindIndex(args, arg => arg == name1
-                                              || arg == name2
-                                              || arg == name3);
-            var found = i >= 0;
-            if (found)
-                args = args.Splice(i, 1);
-            return found;
-        }
-
-        var debug = PopSwitch("--debug");
-        if (debug)
-            Debugger.Launch();
-
-        var verbose = PopSwitch("--verbose", "-v");
-
-        if (PopSwitch("-?", "-h", "--help"))
-        {
-            ShowHelp(Console.Out);
-            return;
-        }
-
-        var tail = Enumerable.ToArray(
-            from arg in args
-            select !arg.StartsWith("@")
-                ? new[] { arg }.AsEnumerable()
-                : arg.Length == 1
-                    ? Enumerable.Empty<string>()
-                    : ParseResponseFile(arg[1..]) into argz
-            from arg in argz
-            select arg);
-
-        if (verbose && tail.Any())
-        {
-            Console.Error.WriteLine(FormattableString.Invariant($"Command-line arguments ({tail.Length}):"));
-
-            foreach (var arg in tail)
-                Console.Error.WriteLine("- " + arg);
-        }
-
-        var defaultColor = new Color(Console.ForegroundColor, Console.BackgroundColor);
-        var markers =
-            from arg in tail
-            let tokens = arg.TrimStart()
-                            .Split('=', 2, StringSplitOptions.RemoveEmptyEntries)
-            where tokens.Length > 1
-            select new
-            {
-                Color = tokens[0],
-                Regex = new Regex(tokens[1]),
-            }
-            into arg
-            let all = arg.Color.EndsWith("*")
-            let color = Color.Parse(all ? arg.Color[..^1] : arg.Color)
-            select CreateMarker(arg.Regex, all, color);
-
-        try
-        {
-            PaintLines(Console.In, defaultColor, markers.Prepend(line => new[] { new Markup(0, line.Length, defaultColor) }));
-        }
-        finally
-        {
-            defaultColor.ApplyToConsole();
-        }
-    }
-
-    static IEnumerable<string> ParseResponseFile(string path)
-    {
-        if (path.Length > 1 && path[0] == '~'
-                            && path[1] == Path.DirectorySeparatorChar
-                            || path[1] == Path.AltDirectorySeparatorChar)
-        {
-            path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), path.AsSpan(2));
-        }
-
-        var lines
-            = GetSearchPaths(path).FirstOrDefault(File.Exists) is { } existingPath
-            ? File.ReadLines(existingPath)
-            : throw new FileNotFoundException($"Unable to find the response file \"{path}\".");
-
-        return CommandLineParser.ParseArgumentsToList(
-            string.Join(" ",
-                from line in lines
-                where !string.IsNullOrWhiteSpace(line)
-                      && !line.StartsWith("#")
-                select line));
-
-        IEnumerable<string> GetSearchPaths(string basePath)
-        {
-            yield return basePath;
-            if (basePath[0] != '~' || basePath.IndexOfAny(StringSeparatorStock.DirectorySeparators) >= 0)
-                yield break;
-            var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            const string dotname = ".recolor";
-            yield return Path.Join(userProfilePath, dotname, basePath[1..] + ".rsp");
-            yield return Path.Join(userProfilePath, dotname, basePath.AsSpan(1));
-        }
-    }
-
-    static void ShowHelp(TextWriter output)
-    {
-        foreach (var line in Regex.Split(Help.Trim(), @"\r?\n"))
-            output.WriteLine(line);
-    }
 
     static void PaintLines(TextReader reader, Color defaultColor, IEnumerable<Marker> markers)
     {
@@ -282,16 +170,118 @@ static partial class Program
         }
     }
 
-    static class StringSeparatorStock
+    static IEnumerable<string> ParseResponseFile(string path)
     {
-        public static readonly char[] DirectorySeparators =
+        if (path.Length > 1 && path[0] == '~'
+                            && path[1] == Path.DirectorySeparatorChar
+                            || path[1] == Path.AltDirectorySeparatorChar)
         {
-            Path.DirectorySeparatorChar,
-            Path.AltDirectorySeparatorChar
-        };
+            path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), path.AsSpan(2));
+        }
+
+        var lines
+            = GetSearchPaths(path).FirstOrDefault(File.Exists) is { } existingPath
+            ? File.ReadLines(existingPath)
+            : throw new FileNotFoundException($"Unable to find the response file \"{path}\".");
+
+        return CommandLineParser.ParseArgumentsToList(string.Join(" ", from line in lines
+                                                                       where !string.IsNullOrWhiteSpace(line)
+                                                                           && !line.StartsWith("#")
+                                                                       select line));
+
+        IEnumerable<string> GetSearchPaths(string basePath)
+        {
+            yield return basePath;
+            var directorySeparators = new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
+            if (basePath[0] != '~' || basePath.IndexOfAny(directorySeparators) >= 0)
+                yield break;
+            var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            const string dotname = ".recolor";
+            yield return Path.Join(userProfilePath, dotname, basePath[1..] + ".rsp");
+            yield return Path.Join(userProfilePath, dotname, basePath.AsSpan(1));
+        }
+    }
+}
+
+[DebuggerDisplay("Foreground = {Foreground}, Background = {Background}")]
+readonly record struct Color(ConsoleColor? Foreground, ConsoleColor? Background)
+{
+    public void Do(Action<ConsoleColor> onForeground, Action<ConsoleColor> onBackground)
+    {
+        if (Background is { } bg) onBackground(bg);
+        if (Foreground is { } fg) onForeground(fg);
     }
 
-    const string Help = $$"""
+    public static Color Parse(string input)
+    {
+        Color color;
+        if (input is [var ch1, ..] && IsHexChar(ch1)
+            && (input is [_] || (input is [_, var ch2] && IsHexChar(ch2))))
+        {
+            var n = int.Parse(input, NumberStyles.HexNumber);
+            color = new Color((ConsoleColor) (n & 0xf), (ConsoleColor) (n >> 4));
+        }
+        else
+        {
+            var tokens = input.Split('/', 2);
+            color = new Color(ParseConsoleColor(tokens[0]),
+                              tokens is [_, var t] ? ParseConsoleColor(t) : null);
+        }
+        return color;
+    }
+
+    static bool IsHexChar(char ch) => ch is >= '0' and <= '9'
+                                         or >= 'a' and <= 'f'
+                                         or >= 'A' and <= 'F';
+
+    static ConsoleColor? ParseConsoleColor(string input)
+    {
+        if (input.Length == 0) return null;
+        if (!Regex.IsMatch(input, " *[a-zA-Z]+ *", RegexOptions.CultureInvariant))
+            throw new FormatException("Color name syntax error.");
+        return input.Length > 0
+             ? Enum.Parse<ConsoleColor>(input, true)
+             : null;
+    }
+
+    public void ApplyToConsole() => Do(fg => Console.ForegroundColor = fg,
+                                       bg => Console.BackgroundColor = bg);
+}
+
+[DebuggerDisplay("{Index}...{End} ({Length})")]
+readonly record struct Run(int Index, int Length)
+{
+    public int End      => Index + Length;
+    public bool IsEmpty => Length == 0;
+}
+
+[DebuggerDisplay("Run = {Run}, Color = {Color}")]
+sealed class Markup
+{
+    public Run   Run      { get; }
+    public Color Color    { get; }
+
+    public Markup(int index, int length, Color color) :
+        this(new Run(index, length), color) { }
+
+    public Markup(Run run, Color color)
+    {
+        Run      = run;
+        Color    = color;
+    }
+}
+
+delegate IEnumerable<Markup> Marker(string line);
+
+static class Help
+{
+    public static void Print(TextWriter output)
+    {
+        foreach (var line in Regex.Split(Text.Trim(), @"\r?\n"))
+            output.WriteLine(line);
+    }
+
+    const string Text = $$"""
         {{ThisAssembly.Info.Product}} {{ThisAssembly.Info.InformationalVersion}})
         {{ThisAssembly.Info.Copyright}}
 
