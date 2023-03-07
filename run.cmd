@@ -1,1 +1,1 @@
-@dotnet run --no-launch-profile -p "%~dp0src" -- %*
+@dotnet run --no-launch-profile -f net7.0 --project "%~dp0src" -- %*
