@@ -222,12 +222,7 @@ static partial class Program
 
     static void ShowHelp(TextWriter output)
     {
-        var help = Help.Replace("$NAME", Path.GetFileNameWithoutExtension(Environment.ProcessPath))
-                       .Replace("$PRODUCT", ThisAssembly.Info.Product)
-                       .Replace("$VERSION", ThisAssembly.Info.FileVersion)
-                       .Replace("$COPYRIGHT", ThisAssembly.Info.Copyright);
-
-        foreach (var line in Regex.Split(help.Trim(), @"\r?\n"))
+        foreach (var line in Regex.Split(Help.Trim(), @"\r?\n"))
             output.WriteLine(line);
     }
 
@@ -296,9 +291,9 @@ static partial class Program
         };
     }
 
-    const string Help = """
-        $PRODUCT $VERSION
-        $COPYRIGHT
+    const string Help = $$"""
+        {{ThisAssembly.Info.Product}} {{ThisAssembly.Info.Version}}
+        {{ThisAssembly.Info.Copyright}}
 
         Colors text received over standard input based on regular expression patterns.
 
