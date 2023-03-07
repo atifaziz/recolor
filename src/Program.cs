@@ -50,8 +50,8 @@ static partial class Program
         public static Color Parse(string input)
         {
             Color color;
-            if (input.Length > 0 && IsHexChar(input[0])
-                && (input.Length == 1 || (input.Length == 2 && IsHexChar(input[1]))))
+            if (input is [var ch1, ..] && IsHexChar(ch1)
+                && (input is [_] || (input is [_, var ch2] && IsHexChar(ch2))))
             {
                 var n = int.Parse(input, NumberStyles.HexNumber);
                 color = new Color((ConsoleColor) (n & 0xf), (ConsoleColor) (n >> 4));
@@ -60,7 +60,7 @@ static partial class Program
             {
                 var tokens = input.Split('/', 2);
                 color = new Color(ParseConsoleColor(tokens[0]),
-                                  tokens.Length > 1 ? ParseConsoleColor(tokens[1]) : null);
+                                  tokens is [_, var t] ? ParseConsoleColor(t) : null);
             }
             return color;
         }
