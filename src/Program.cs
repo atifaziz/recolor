@@ -146,7 +146,7 @@ namespace Recolor
                     ? new[] { arg }.AsEnumerable()
                     : arg.Length == 1
                         ? Enumerable.Empty<string>()
-                        : ParseResponseFile(arg.Substring(1)) into argz
+                        : ParseResponseFile(arg[1..]) into argz
                 from arg in argz
                 select arg);
 
@@ -171,7 +171,7 @@ namespace Recolor
                 }
                 into arg
                 let all = arg.Color.EndsWith("*")
-                let color = Color.Parse(all ? arg.Color.Slice(0, -1) : arg.Color)
+                let color = Color.Parse(all ? arg.Color[..^1] : arg.Color)
                 select CreateMarker(arg.Regex, all, color);
 
             try
@@ -212,7 +212,7 @@ namespace Recolor
                     yield break;
                 var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                 const string dotname = ".recolor";
-                yield return Path.Join(userProfilePath, dotname, basePath.Substring(1) + ".rsp");
+                yield return Path.Join(userProfilePath, dotname, basePath[1..] + ".rsp");
                 yield return Path.Join(userProfilePath, dotname, basePath.AsSpan(1));
             }
         }
