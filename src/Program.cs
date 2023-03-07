@@ -40,8 +40,8 @@ namespace Recolor
         {
             public void Do(Action<ConsoleColor> onForeground, Action<ConsoleColor> onBackground)
             {
-                if (Background is ConsoleColor bg) onBackground(bg);
-                if (Foreground is ConsoleColor fg) onForeground(fg);
+                if (Background is { } bg) onBackground(bg);
+                if (Foreground is { } fg) onForeground(fg);
             }
 
             public static Color Parse(string input)
@@ -62,9 +62,9 @@ namespace Recolor
                 return color;
             }
 
-            static bool IsHexChar(char ch) => (ch >= '0' && ch <= '9')
-                                           || (ch >= 'a' && ch <= 'f')
-                                           || (ch >= 'A' && ch <= 'F');
+            static bool IsHexChar(char ch) => ch is >= '0' and <= '9'
+                                                 or >= 'a' and <= 'f'
+                                                 or >= 'A' and <= 'F';
 
             static ConsoleColor? ParseConsoleColor(string input)
             {
@@ -194,7 +194,7 @@ namespace Recolor
             }
 
             var lines
-                = GetSearchPaths(path).FirstOrDefault(File.Exists) is string existingPath
+                = GetSearchPaths(path).FirstOrDefault(File.Exists) is { } existingPath
                 ? File.ReadLines(existingPath)
                 : throw new FileNotFoundException($"Unable to find the response file \"{path}\".");
 
