@@ -39,8 +39,6 @@ Portions Copyright © .NET Foundation and Contributors.</Copyright>
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Help.txt" />
-    <EmbeddedResource Include="Help.txt" />
     <None Include="..\COPYING.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
     <None Include="..\README.md" Pack="true" PackagePath="$(PackageReadmeFile)" />
   </ItemGroup>
