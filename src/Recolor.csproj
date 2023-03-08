@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
     <LangVersion>11</LangVersion>
-    <VersionPrefix>2.5.0</VersionPrefix>
+    <VersionPrefix>2.5.1</VersionPrefix>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>recolor</ToolCommandName>
     <Description>Colors text over STDIN based on regular expression patterns.</Description>
