@@ -172,9 +172,8 @@ static void Run(string[] args)
 
     static IEnumerable<string> ParseResponseFile(string path)
     {
-        if (path.Length > 1 && path[0] == '~'
-                            && path[1] == Path.DirectorySeparatorChar
-                            || path[1] == Path.AltDirectorySeparatorChar)
+        if (path is ['~', var sep, ..]
+            && (sep == Path.DirectorySeparatorChar || sep == Path.AltDirectorySeparatorChar))
         {
             path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), path.AsSpan(2));
         }
